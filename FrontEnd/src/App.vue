@@ -1,8 +1,12 @@
-<script setup></script>
+<script setup>
+import Nav from './components/layouts/Nav.vue'
+</script>
+
 
 <template>
 
-  <h1>Hello world</h1>
+  <Nav />
+  <router-view></router-view>
 </template>
 
 <style scoped></style>

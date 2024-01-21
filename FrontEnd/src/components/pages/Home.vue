@@ -1,18 +1,30 @@
 
 <script setup>
 import Modale from '../utils/Modale.vue';
-import { onMounted ,ref } from 'vue'
+import { onMounted ,ref  } from 'vue'
 import { initFlowbite } from 'flowbite'
 import {useAuthUser} from '../../store/auth'
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 const router = useRouter()
 
 const authUser = useAuthUser();
 
 const isVisible = ref(false)
-onMounted(() => {
-    authUser.getUser();
+let userId = ref(0)
+const listOfUrls = ref()
+const getUrls = async () =>{
+await authUser.getToken()
+const response  = await axios.get('/api/urls')
+return response.data
+}
+onMounted( async() => {
+   await  authUser.getUser()
+   
+    listOfUrls.value =  await  getUrls()
+   userId = authUser.user.id
+   
     initFlowbite();
 })
 const truncateText = (text, length)=> {
@@ -24,11 +36,11 @@ const truncateText = (text, length)=> {
 </script>
 <template>
 
-<Modale :isVisible="isVisible"  @update:isVisible="isVisible = $event" />    
+    
 <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
     
     <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-      
+   
         <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
             <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
                 <div class="w-full md:w-1/2">
@@ -66,9 +78,7 @@ const truncateText = (text, length)=> {
                                 <li class="flex items-center">
                                     <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Most viewed</a>
                                 </li>
-                                <li class="flex items-center">
-                                    <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Most viewed in 24h</a>
-                                </li>
+                                
                                 <li class="flex items-center">
                                     <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Recent</a>
                                 </li>
@@ -84,7 +94,7 @@ const truncateText = (text, length)=> {
                         <tr>
                             <th scope="col" class="px-4 py-3">Long url</th>
                             <th scope="col" class="px-4 py-3">Short url</th>
-                            <th scope="col" class="px-4 py-3">24h clicks</th>
+                           
                             <th scope="col" class="px-4 py-3">totale clicks</th>
                             <th scope="col" class="px-4 py-3">Status</th>
                             <th scope="col" class="px-4 py-3">
@@ -93,16 +103,30 @@ const truncateText = (text, length)=> {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-b dark:border-gray-700">
-                            <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"> {{ truncateText('https://drive.google.com/file/d/1OnHmgyNSeLSaZ5t5ZVdWRhuSr4yU0Sut/view' , 20) }} </th>
-                            <td class="px-4 py-3">shoreten url</td>
-                            <td class="px-4 py-3"> 5</td>
-                            <td class="px-4 py-3">55</td>
-                            <td class="px-4 py-3"> <span class="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
+                        <tr v-for="(listOfUrl , index ) in listOfUrls " :key="index" class="border-b dark:border-gray-700">
+                            <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"> {{ truncateText(listOfUrl.long_url , 20) }} </th>
+                            <td class="px-4 py-3">
+<a :href="'http://localhost:8000/api/shorturl/'+listOfUrl.short_code" target="_blanck" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">{{ listOfUrl.short_code }}</a>
+ </td>
+                            <td class="px-4 py-3"> {{ listOfUrl.clicks }}</td>
+                          
+                            <td class="px-4 py-3"> 
+                  <template v-if="listOfUrl.is_active">
+                    <span class="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
                 <span class="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
                 Available
-            </span></td>
-                            <td class="px-4 py-3 flex items-center justify-end">
+            </span>
+                  </template>              
+                  <template v-else>
+                    <span class="inline-flex items-center bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
+                <span class="w-2 h-2 me-1 bg-red-500 rounded-full"></span>
+                unavalable
+            </span>
+                  </template>              
+               
+        
+        </td>
+                            <td  class="px-4 py-3 flex items-center justify-end">
                                 <button id="apple-imac-27-dropdown-button" data-dropdown-toggle="apple-imac-27-dropdown" class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100" type="button">
                                     <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -123,37 +147,7 @@ const truncateText = (text, length)=> {
                                 </div>
                             </td>
                         </tr>
-                        <tr class="border-b dark:border-gray-700">
-                            <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ truncateText('https://drive.google.com/file/d/1OnHmgyNSeLSaZ5t5ZVdWRhuSr4yU0Sut/view' , 20) }}</th>
-                            <td class="px-4 py-3">shorte url</td>
-                            <td class="px-4 py-3">3</td>
-                            <td class="px-4 py-3">200</td>
-                            <td class="px-4 py-3"> <span class="inline-flex items-center bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
-                                <span class="w-2 h-2 me-1 bg-red-500 rounded-full"></span>
-                                Unavailable
-                            </span>
-                        </td>
-                            <td class="px-4 py-3 flex items-center justify-end">
-                                <button id="apple-imac-20-dropdown-button" data-dropdown-toggle="apple-imac-20-dropdown" class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100" type="button">
-                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                                    </svg>
-                                </button>
-                                <div id="apple-imac-20-dropdown" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="apple-imac-20-dropdown-button">
-                                        <li>
-                                            <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
-                                        </li>
-                                    </ul>
-                                    <div class="py-1">
-                                        <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                        
                         
                     </tbody>
                 </table>
@@ -201,6 +195,10 @@ const truncateText = (text, length)=> {
             </nav>
         </div>
     </div>
+    <template  v-if="isVisible">
+        <Modale :userid="userId"  :isVisible="isVisible"  @update:isVisible="isVisible = $event" />
+    </template>
+   
     </section>
         
     

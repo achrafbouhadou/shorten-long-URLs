@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ShortUrlController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +18,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
+});
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/urls', [ShortUrlController::class, 'index']);
+    Route::post('/urls', [ShortUrlController::class, 'store']);
+    Route::get('/urls/{id}', [ShortUrlController::class, 'show']);
+    Route::put('/urls/{id}', [ShortUrlController::class, 'update']);
+    Route::delete('/urls/{id}', [ShortUrlController::class, 'destroy']);
 });

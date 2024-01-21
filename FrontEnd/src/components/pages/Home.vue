@@ -3,9 +3,16 @@
 import Modale from '../utils/Modale.vue';
 import { onMounted ,ref } from 'vue'
 import { initFlowbite } from 'flowbite'
+import {useAuthUser} from '../../store/auth'
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
+
+const authUser = useAuthUser();
 
 const isVisible = ref(false)
 onMounted(() => {
+    authUser.getUser();
     initFlowbite();
 })
 const truncateText = (text, length)=> {

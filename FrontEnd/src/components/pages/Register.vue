@@ -1,10 +1,14 @@
 <script setup>
-import axios from 'axios';
+
 import Logo from '../utils/logo.vue';
-import {ref} from 'vue';
+import {ref , onMounted} from 'vue';
+import {useAuthUser} from '../../store/auth'
 import { useRouter } from 'vue-router';
 
-const router    = useRouter()
+const router = useRouter()
+
+const authUser = useAuthUser();
+
 const form = ref({
     name:'achraf',
     email:'',
@@ -13,14 +17,8 @@ const form = ref({
 })
 
 
-
 const handleRegister = ()=>{
-    try {
-        axios.post('/register' , form.value);
-        router.push('/login')
-    } catch (error) {
-        console.log(error)
-    }
+    authUser.handleRegister(form.value)
 }
 
 

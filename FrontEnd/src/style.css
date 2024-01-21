@@ -2,3 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+.active {
+    color: blue !important;
+}
+.home-link{
+    color: white;
+}

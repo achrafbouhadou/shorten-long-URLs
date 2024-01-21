@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ShortUrl extends Model
 {
     use HasFactory;
-
+    protected $table = 'shorturls';
     protected $fillable = [
         'user_id',
         'long_url',
@@ -17,4 +17,9 @@ class ShortUrl extends Model
         'clicks',
         'is_active'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

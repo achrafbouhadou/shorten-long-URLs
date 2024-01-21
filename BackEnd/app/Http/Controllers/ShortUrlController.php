@@ -15,7 +15,9 @@ class ShortUrlController extends Controller
      */
     public function index()
     {
-        $shortUrls = ShortUrl::all();
+        // Get the currently authenticated user
+        $user = auth()->user();
+        $shortUrls = $user->shortUrls;
         return response()->json($shortUrls);
     }
 
@@ -83,6 +85,18 @@ class ShortUrlController extends Controller
     {
         $shortUrl->delete();
         return response()->json(null, 204);
+    }
+    /**
+     * visite the specified url from storage.
+     */
+    public function visite(Request $request)
+    {
+
+        $short_code = $request->short_code;
+        $shortUrl = ShortUrl::WHERE('short_code', $short_code)->firstOrFail();
+        // Increment the click count
+        $shortUrl->increment('clicks');
+        return redirect($shortUrl->long_url);
     }
 
     // Logic to generate a unique short code

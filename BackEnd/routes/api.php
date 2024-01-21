@@ -28,3 +28,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/urls/{id}', [ShortUrlController::class, 'update']);
     Route::delete('/urls/{id}', [ShortUrlController::class, 'destroy']);
 });
+Route::get('/shorturl/{short_code}', [ShortUrlController::class, 'visite']);

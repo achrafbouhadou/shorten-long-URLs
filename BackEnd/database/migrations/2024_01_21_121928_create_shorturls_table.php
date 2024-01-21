@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('shorturls', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('long_url');
-            $table->string('short_code');
+            $table->string('long_url', 2048);
+            $table->string('short_code', 2048);
             $table->string('description');
             $table->boolean('is_active')->default(true);
             $table->integer('clicks')->default(0);

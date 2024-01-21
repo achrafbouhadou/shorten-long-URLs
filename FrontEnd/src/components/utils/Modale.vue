@@ -1,19 +1,20 @@
 <script setup>
 import axios from 'axios';
 import { initFlowbite } from 'flowbite';
-import { onMounted,ref } from 'vue';
+import { onMounted,ref,watch } from 'vue';
 
 
 const props = defineProps({
     isVisible:Boolean,
+    userid:null,
 })
 const emit = defineEmits(['update:isVisible'])
 onMounted(() => {
-    initFlowbite();
+   
 })
- 
+
 const form = ref({
-    user_id:0,
+    user_id:props.userid,
     long_url:'',
     short_code:'',
     description:'',
@@ -26,9 +27,7 @@ emit('update:isVisible' , false)
 
 const handelsubmit = async ()=>{
     try {
-        
-      
-         response =  await axios.post('api/urls' ,form.value);
+        response =  await axios.post('api/urls' ,form.value);
         console.log(response)
     } catch (error) {
         console.log(error.response.data.message)
@@ -38,7 +37,7 @@ const handelsubmit = async ()=>{
 <template>
 
 <!-- Main modal -->
-<div v-if="isVisible"  id="crud-modal" tabindex="-1" aria-hidden="true" class="flex  overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+<div v-if="isVisible"   class="flex  overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative p-4 w-full max-w-md max-h-full">
         <!-- Modal content -->
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
@@ -46,6 +45,7 @@ const handelsubmit = async ()=>{
             <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     Short new url 
+                 {{ userid }}
                 </h3>
                 <button @click="closeModal" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="crud-modal">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">

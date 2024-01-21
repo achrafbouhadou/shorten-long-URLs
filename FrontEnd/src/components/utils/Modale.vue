@@ -1,6 +1,8 @@
 <script setup>
+import axios from 'axios';
 import { initFlowbite } from 'flowbite';
 import { onMounted,ref } from 'vue';
+
 
 const props = defineProps({
     isVisible:Boolean,
@@ -9,7 +11,7 @@ const emit = defineEmits(['update:isVisible'])
 onMounted(() => {
     initFlowbite();
 })
-
+ 
 const form = ref({
     user_id:0,
     long_url:'',
@@ -22,6 +24,16 @@ const closeModal = ()=> {
 emit('update:isVisible' , false)
 }
 
+const handelsubmit = async ()=>{
+    try {
+        
+      
+         response =  await axios.post('api/urls' ,form.value);
+        console.log(response)
+    } catch (error) {
+        console.log(error.response.data.message)
+    }
+}
 </script>
 <template>
 
@@ -43,14 +55,14 @@ emit('update:isVisible' , false)
                 </button>
             </div>
             <!-- Modal body -->
-            <form class="p-4 md:p-5">
+            <form class="p-4 md:p-5" @submit.prevent="handelsubmit">
                 <div class="grid gap-4 mb-4 grid-cols-2">
                     <div class="col-span-2">
                         <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">long url</label>
                         <input v-model="form.long_url" type="text" name="longurl" id="longurl" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Type product name" required="">
                     </div>
                     <div class="col-span-2">
-                        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Description</label>
+                        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">url Description</label>
                         <textarea v-model="form.description" id="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Write product description here"></textarea>                    
                     </div>
                     

@@ -1,27 +1,21 @@
 
 <script setup>
 import Logo from '../utils/logo.vue';
-import { ref } from 'vue';
+import { ref , onMounted } from 'vue';
 import axios from 'axios';
+import {useAuthUser} from '../../store/auth'
 import { useRouter } from 'vue-router';
 
-const router = useRouter();
+const router = useRouter()
+
+const authUser = useAuthUser();
 const form  = ref({
     email:'',
     password:'',
 })
+
 const handleLogin = async ()=>{
-
-    try {
-        // First, get the CSRF cookie
-        await axios.get('http://localhost:8000/sanctum/csrf-cookie');
-
-        await axios.post('/login',form.value);
-       router.push("/")
-    } catch (error) {
-        console.log(error)
-    }
-   
+  await authUser.handleLogin(form.value)
 }
 </script>
 <template>

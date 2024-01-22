@@ -1,31 +1,34 @@
 
 <script setup>
 import Modale from '../utils/Modale.vue';
-import { onMounted ,ref  } from 'vue'
+import ReadModal from '../utils/ReadModal.vue';
+import { onMounted ,ref , watch } from 'vue'
 import { initFlowbite } from 'flowbite'
 import {useAuthUser} from '../../store/auth'
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+
 
 const router = useRouter()
 
 const authUser = useAuthUser();
 
 const isVisible = ref(false)
+const isVisibleRead = ref(false)
 let userId = ref(0)
-const listOfUrls = ref()
+const listOfUrls = ref(null)
+const Url = ref({})
 const getUrls = async () =>{
 await authUser.getToken()
 const response  = await axios.get('/api/urls')
 return response.data
 }
-onMounted( async() => {
+onMounted( async() => { 
    await  authUser.getUser()
-   
     listOfUrls.value =  await  getUrls()
    userId = authUser.user.id
+   initFlowbite();
    
-    initFlowbite();
 })
 const truncateText = (text, length)=> {
     if (text.length <= length) {
@@ -33,6 +36,69 @@ const truncateText = (text, length)=> {
     }
     return text.substr(0, length) + '...';
 }
+const geturlDetail = async (id) => {
+        await authUser.getToken()
+        const response = await axios.get(`http://localhost:8000/api/urls/${id}`);
+        Url.value = response.data;
+}
+
+const showDetail = async (id) => {
+    try {
+        await geturlDetail(id)
+        isVisibleRead.value = true;
+    } catch (error) {
+        console.error("Error fetching URL details:", error);
+       
+    }
+};
+
+const editUrl = async (id) => {
+    try {
+        await geturlDetail(id)
+    isVisible.value = true
+        
+    } catch (error) {
+        console.error("Error fetching URL details:", error);
+    }
+  
+}
+const deletUrl  = async (id) => {
+
+    let userResponse = confirm("Are you sure you want to Delete Url?");
+    if (userResponse) {
+       try {
+
+            authUser.getToken()
+
+            const response = await axios.delete(`http://localhost:8000/api/urls/${id}`);
+                
+        } catch (error) {
+                console.error("Error fetching URL details:", error);
+            }
+    } else {
+        // User clicked Cancel
+        console.log("User canceled the action.");
+    }
+    
+  
+}
+
+watch(isVisibleRead, (newValue, oldValue) => {
+    console.log(newValue)
+if(newValue == false && oldValue==true){
+    Url.value = {}
+}
+console.log(Url.value)
+})
+watch(isVisible, (newValue, oldValue) => {
+    console.log(newValue)
+if(newValue == false && oldValue==true){
+    Url.value = {}
+}
+console.log(Url.value)
+})
+
+
 </script>
 <template>
 
@@ -45,6 +111,7 @@ const truncateText = (text, length)=> {
             <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
                 <div class="w-full md:w-1/2">
                     <form class="flex items-center">
+                       
                         <label for="simple-search" class="sr-only">Search</label>
                         <div class="relative w-full">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -106,8 +173,8 @@ const truncateText = (text, length)=> {
                         <tr v-for="(listOfUrl , index ) in listOfUrls " :key="index" class="border-b dark:border-gray-700">
                             <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"> {{ truncateText(listOfUrl.long_url , 20) }} </th>
                             <td class="px-4 py-3">
-<a :href="'http://localhost:8000/api/shorturl/'+listOfUrl.short_code" target="_blanck" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">{{ listOfUrl.short_code }}</a>
- </td>
+                            <a :href="'http://localhost:8000/api/shorturl/'+listOfUrl.short_code" target="_blanck" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">{{ listOfUrl.short_code }}</a>
+                            </td>
                             <td class="px-4 py-3"> {{ listOfUrl.clicks }}</td>
                           
                             <td class="px-4 py-3"> 
@@ -126,26 +193,43 @@ const truncateText = (text, length)=> {
                
         
         </td>
-                            <td  class="px-4 py-3 flex items-center justify-end">
-                                <button id="apple-imac-27-dropdown-button" data-dropdown-toggle="apple-imac-27-dropdown" class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100" type="button">
-                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <td class="px-4 py-3 flex items-center justify-betwen">
+                        <div class="flex items-center justify-en">
+                            <button 
+                            @click="showDetail(listOfUrl.id)"
+                                :id="`eye-button-${index}`" 
+                                class="inline-flex mr-3 items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
+                                type="button">
+                                <svg class="w-4 h-4 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 14">
+                                    <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                                    <path d="M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                                    <path d="M10 13c4.97 0 9-2.686 9-6s-4.03-6-9-6-9 2.686-9 6 4.03 6 9 6Z"/>
+                                    </g>
+                                </svg>
+                             </button>
+                            <button 
+                                @click="editUrl(listOfUrl.id)"
+                                :id="`edit-button-${index}`" 
+                                class="inline-flex mr-3 items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
+                                type="button">
+                                <svg class="w-4 h-4 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+                                    <path d="M12.687 14.408a3.01 3.01 0 0 1-1.533.821l-3.566.713a3 3 0 0 1-3.53-3.53l.713-3.566a3.01 3.01 0 0 1 .821-1.533L10.905 2H2.167A2.169 2.169 0 0 0 0 4.167v11.666A2.169 2.169 0 0 0 2.167 18h11.666A2.169 2.169 0 0 0 16 15.833V11.1l-3.313 3.308Zm5.53-9.065.546-.546a2.518 2.518 0 0 0 0-3.56 2.576 2.576 0 0 0-3.559 0l-.547.547 3.56 3.56Z"/>
+                                    <path d="M13.243 3.2 7.359 9.081a.5.5 0 0 0-.136.256L6.51 12.9a.5.5 0 0 0 .59.59l3.566-.713a.5.5 0 0 0 .255-.136L16.8 6.757 13.243 3.2Z"/>
+                                </svg>
+                            </button>
+                            <button 
+                            @click="deletUrl(listOfUrl.id)"
+                                :id="`trash-button-${index}`" 
+                                class="inline-flex items-center  p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
+                                type="button">
+                                     <svg class="w-4 h-4 text-red-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z"/>
                                     </svg>
-                                </button>
-                                <div id="apple-imac-27-dropdown" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="apple-imac-27-dropdown-button">
-                                        <li>
-                                            <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
-                                        </li>
-                                    </ul>
-                                    <div class="py-1">
-                                        <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a>
-                                    </div>
-                                </div>
-                            </td>
+                             </button>
+                        </div>
+               
+               
+                </td>
                         </tr>
                         
                         
@@ -194,11 +278,19 @@ const truncateText = (text, length)=> {
                 </ul>
             </nav>
         </div>
+        
     </div>
+    
     <template  v-if="isVisible">
-        <Modale :userid="userId"  :isVisible="isVisible"  @update:isVisible="isVisible = $event" />
+        <Modale :url="Url ? Url : null" :userid="userId"  :isVisible="isVisible"  @update:isVisible="isVisible = $event" />
     </template>
-   
+   <template v-if="isVisibleRead && Url" >
+
+        <ReadModal   :url="Url"  :isVisibleRead="isVisibleRead"  @update:isVisibleRead="isVisibleRead = $event" />
+
+   </template>
+
+
     </section>
         
     
